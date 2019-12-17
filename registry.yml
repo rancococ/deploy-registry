@@ -1,0 +1,28 @@
+##########################################################################
+# 部署配置文件(base)
+# 本配置文件(xx.yml)中的变量(${xxx})是从同级目录下的.env文件中读取的
+##########################################################################
+# compose支持的版本2
+version: "2"
+services:
+  # registry
+  registry:
+    image: ${IMAGE_REPO}/${IMAGE_REGISTRY}
+    container_name: "registry.${PRODUCT_NAME}.${COMPANY_NAME}"
+    hostname: "registry.${PRODUCT_NAME}.${COMPANY_NAME}"
+    restart: "always"
+    environment:
+      - REGISTRY_AUTH=htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+      - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
+      - REGISTRY_HTTP_ADDR=0.0.0.0:443
+      - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.crt
+      - REGISTRY_HTTP_TLS_KEY=/certs/registry.key
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./volume/registry/conf/auth:/auth:ro
+      - ./volume/registry/conf/certs:/certs:ro
+      - ./volume/registry/data:/var/lib/registry:rw
+    network_mode: "host"
+    extra_hosts:
+      - "registry.${PRODUCT_NAME}.${COMPANY_NAME}:${HOST_IP}"
